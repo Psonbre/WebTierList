@@ -26,6 +26,46 @@ window.addEventListener('DOMContentLoaded', function() {
       div.appendChild(itemsDiv);
       tierlistDiv.appendChild(div);
     }
+
+    var addRowButton = document.querySelector('.addRowBtn');
+    addRowButton.addEventListener('click', function() {
+      var tierlistDiv = document.querySelector('.tierlist');
+      var alphabet = 'SABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      var numRows = tierlistDiv.getElementsByClassName('row').length;
+  
+      if (numRows >= alphabet.length) {
+        return; // Maximum number of rows reached
+      }
+  
+      var letter = alphabet[numRows];
+      var div = document.createElement('div');
+      div.className = 'row';
+      var ratingDiv = document.createElement('div');
+      ratingDiv.style.backgroundColor = colors[numRows % colors.length];
+      ratingDiv.className = 'ratingDiv';
+      var rating = document.createElement('input');
+      rating.className = 'rating';
+      rating.value = letter;
+      var itemsDiv = document.createElement('div');
+      itemsDiv.className = 'itemsRow itemsRow' + numRows.toString();
+      itemsDiv.addEventListener('dragover', allowDrop);
+      itemsDiv.addEventListener('drop', handleDrop);
+      ratingDiv.appendChild(rating);
+      div.appendChild(ratingDiv);
+      div.appendChild(itemsDiv);
+      tierlistDiv.appendChild(div);
+    });
+
+    var removeRowButton = document.querySelector('.removeRowBtn');
+    removeRowButton.addEventListener('click', function() {
+      var tierlistDiv = document.querySelector('.tierlist');
+      var rows = tierlistDiv.getElementsByClassName('row');
+  
+      if (rows.length > 0) {
+        var lastRow = rows[rows.length - 1];
+        lastRow.parentNode.removeChild(lastRow);
+      }
+    });
   });
   
   
