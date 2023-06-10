@@ -66,6 +66,9 @@ window.addEventListener('DOMContentLoaded', function() {
         lastRow.parentNode.removeChild(lastRow);
       }
     });
+
+    var trashElement = document.querySelector('.trash');
+    trashElement.addEventListener('click', handleTrashClick);
   });
   
   
@@ -88,9 +91,12 @@ window.addEventListener('DOMContentLoaded', function() {
           reader.onload = (function(file) {
             return function(e) {
               var img = document.createElement('img');
+              img.addEventListener('contextmenu', handleImageContextMenu);
+              img.addEventListener('mouseover', handleImageMouseOver);
+              img.addEventListener('mouseout', handleImageMouseOut);
               img.src = e.target.result;
               img.className = 'tierListImg';
-              img.title = file.name; // Set the name as the tooltip
+              img.itemName = file.name;
               img.addEventListener('dragstart', handleDragStart);
               document.getElementsByClassName('itemsRow0')[0].appendChild(img);
             };
@@ -129,7 +135,16 @@ window.addEventListener('DOMContentLoaded', function() {
   function allowDrop(event) {
     event.preventDefault();
   }
+
+  function handleImageContextMenu(event) {
+    event.preventDefault(); // Prevent the default context menu
   
+    var image = event.target;
+    var tooltip = document.querySelector('.tooltip')
+    tooltip.parentNode.removeChild(tooltip);
+    image.parentNode.removeChild(image); // Remove the image element from its parent
+  }
+
   function handleDrop(event) {
     event.preventDefault();
     event.target.classList.remove('dragover'); // Remove the CSS class for visual feedback
@@ -151,7 +166,43 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   }
   
+  function handleImageMouseOver(event) {
+    var image = event.target;
+    var imageName = image.itemName.split('.').slice(0, -1).join('.');
+    var tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    tooltip.textContent = imageName;
+
+    tooltip.style.visibility = 'hidden'; // Hide the tooltip initially
+    image.parentNode.appendChild(tooltip); // Append the tooltip to the image's parent container
+  
+    // Delay the calculation until the tooltip is added to the document
+    setTimeout(function() {
+      tooltip.style.top = image.offsetTop - tooltip.offsetHeight - 10 + 'px'; // Position the tooltip above the image
+      tooltip.style.left = image.offsetLeft + (image.offsetWidth - tooltip.offsetWidth) / 2 + 'px'; // Center the tooltip horizontally
+      tooltip.style.visibility = 'visible'; // Show the tooltip
+    }, 0);
+  }
+  
+  
+  function handleImageMouseOut(event) {
+    var tooltip = document.querySelector('.tooltip');
+    if (tooltip) {
+      tooltip.parentNode.removeChild(tooltip);
+    }
+  }
+  
+
   document.addEventListener('dragend', function() {
     draggedElement = null; // Reset the dragged element
   });
+
+  function handleTrashClick() {
+    var images = document.querySelectorAll('.tierListImg');
+    for (var i = 0; i < images.length; i++) {
+      var image = images[i];
+      image.parentNode.removeChild(image);
+    }
+  }
+  
   

@@ -78,3 +78,13 @@ body{
     position: absolute;
     right: 0px;
 }
+.tooltip{
+    color: white;
+    position: absolute;
+    font-size: 20pt;
+    background: black;
+    border-radius: 10px;
+    padding: 10px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
