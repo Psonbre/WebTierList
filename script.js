@@ -86,32 +86,55 @@ window.addEventListener('DOMContentLoaded', function() {
       fileInput.multiple = true;
   
       fileInput.addEventListener('change', function(event) {
-        var files = event.target.files;
-        var reader;
-  
-        for (var i = 0; i < files.length; i++) {
-          reader = new FileReader();
-          reader.onload = (function(file) {
-            return function(e) {
-              var img = document.createElement('img');
-              img.addEventListener('contextmenu', handleImageContextMenu);
-              img.addEventListener('mouseover', handleImageMouseOver);
-              img.addEventListener('mouseout', handleImageMouseOut);
-              img.src = e.target.result;
-              img.className = 'tierListImg';
-              img.itemName = file.name;
-              img.addEventListener('dragstart', handleDragStart);
-              document.getElementsByClassName('itemsRow0')[0].appendChild(img);
-            };
-          })(files[i]);
-  
-          reader.readAsDataURL(files[i]);
-        }
+        handleFiles(event.target.files);
       });
   
       fileInput.click();
     });
+  
+    // Function to handle pasted images
+    function handlePaste(event) {
+      var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+      var files = [];
+  
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file' && items[i].type.includes('image')) {
+          var file = items[i].getAsFile();
+          files.push(file);
+        }
+      }
+  
+      handleFiles(files);
+    }
+  
+    // Function to handle selected files
+    function handleFiles(files) {
+      var reader;
+  
+      for (var i = 0; i < files.length; i++) {
+        reader = new FileReader();
+        reader.onload = (function(file) {
+          return function(e) {
+            var img = document.createElement('img');
+            img.addEventListener('contextmenu', handleImageContextMenu);
+            img.addEventListener('mouseover', handleImageMouseOver);
+            img.addEventListener('mouseout', handleImageMouseOut);
+            img.src = e.target.result;
+            img.className = 'tierListImg';
+            img.itemName = file.name;
+            img.addEventListener('dragstart', handleDragStart);
+            document.getElementsByClassName('itemsRow0')[0].appendChild(img);
+          };
+        })(files[i]);
+  
+        reader.readAsDataURL(files[i]);
+      }
+    }
+  
+    // Add event listener for paste event
+    window.addEventListener('paste', handlePaste);
   });
+  
   
   var draggedElement = null;
   
@@ -175,9 +198,41 @@ window.addEventListener('DOMContentLoaded', function() {
     var tooltip = document.createElement('div');
     tooltip.className = 'tooltip';
     tooltip.textContent = imageName;
-
+  
     tooltip.style.visibility = 'hidden'; // Hide the tooltip initially
     image.parentNode.appendChild(tooltip); // Append the tooltip to the image's parent container
+  
+    // Function to make the tooltip modifiable
+    function makeTooltipModifiable() {
+      tooltip.contentEditable = true;
+      tooltip.focus();
+      tooltip.addEventListener('keydown', handleTooltipKeydown);
+      tooltip.addEventListener('blur', saveTooltip);
+      var range = document.createRange();
+      range.selectNodeContents(tooltip);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  
+    // Function to handle keydown event on the tooltip
+    function handleTooltipKeydown(event) {
+      if (event.keyCode === 13) { // Enter key
+        event.preventDefault();
+        saveTooltip();
+      }
+    }
+  
+    // Function to save the tooltip
+    function saveTooltip() {
+      image.itemName = tooltip.textContent.trim() + '.png';
+      tooltip.contentEditable = false;
+      tooltip.removeEventListener('keydown', handleTooltipKeydown);
+      tooltip.removeEventListener('blur', saveTooltip);
+      tooltip.style.top = image.offsetTop - tooltip.offsetHeight - 10 + 'px'; // Position the tooltip above the image
+      tooltip.style.left = image.offsetLeft + (image.offsetWidth - tooltip.offsetWidth) / 2 + 'px'; // Center the tooltip horizontally
+      tooltip.style.visibility = 'visible'; // Show the tooltip
+    }
   
     // Delay the calculation until the tooltip is added to the document
     setTimeout(function() {
@@ -185,9 +240,12 @@ window.addEventListener('DOMContentLoaded', function() {
       tooltip.style.left = image.offsetLeft + (image.offsetWidth - tooltip.offsetWidth) / 2 + 'px'; // Center the tooltip horizontally
       tooltip.style.visibility = 'visible'; // Show the tooltip
     }, 0);
+  
+    // Add event listener for double-click event
+    image.addEventListener('dblclick', makeTooltipModifiable);
   }
   
-  
+
   function handleImageMouseOut(event) {
     var tooltip = document.querySelector('.tooltip');
     if (tooltip) {
