@@ -1,7 +1,8 @@
+var colors = ['#ff5252', '#ff9f43', '#ffc107', '#4caf50', '#03a9f4', '#673ab7'];
 window.addEventListener('DOMContentLoaded', function() {
     var tierlistDiv = document.querySelector('.tierlist');
     var alphabet = 'SABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    var colors = ['#ff5252', '#ff9f43', '#ffc107', '#4caf50', '#03a9f4', '#673ab7']; // Classic tier list colors
+    // Classic tier list colors
 
     for (var i = 0; i < 6; i++) {
       var letter = alphabet[i];
@@ -13,6 +14,7 @@ window.addEventListener('DOMContentLoaded', function() {
       var rating = document.createElement('input');
       rating.className = 'rating';
       rating.value = letter;
+      rating.maxLength = 1
       var itemsDiv = document.createElement('div');
       itemsDiv.className = 'itemsRow itemsRow' + i.toString();
       itemsDiv.addEventListener('dragover', allowDrop);
@@ -45,6 +47,7 @@ window.addEventListener('DOMContentLoaded', function() {
       ratingDiv.className = 'ratingDiv';
       var rating = document.createElement('input');
       rating.className = 'rating';
+      rating.maxLength = 1;
       rating.value = letter;
       var itemsDiv = document.createElement('div');
       itemsDiv.className = 'itemsRow itemsRow' + numRows.toString();
@@ -203,6 +206,119 @@ window.addEventListener('DOMContentLoaded', function() {
       var image = images[i];
       image.parentNode.removeChild(image);
     }
+    document.querySelector(".title").value = 'Tier List'
   }
+  
+
+  ////////////////////////////////
+
+  // Function to save the tierlist data as a JSON file
+  function saveTierlist() {
+    var tierlistData = [];
+    var rows = document.getElementsByClassName('row');
+    var title = document.querySelector('.title').value; // Get the title of the tier list
+  
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      var rating = row.querySelector('.rating').value;
+      var images = Array.from(row.getElementsByClassName('tierListImg')).map(function (img) {
+        return {
+          src: img.src,
+          itemName: img.itemName // Save the itemName property along with the image source
+        };
+      });
+  
+      tierlistData.push({
+        rating: rating,
+        images: images
+      });
+    }
+  
+    var jsonData = JSON.stringify({ title: title, tiers: tierlistData }, null, 2); // Include the title in the JSON
+    var filename = 'tierlist.json';
+    var blob = new Blob([jsonData], { type: 'application/json' });
+  
+    // Create a temporary <a> element to initiate the download
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+  
+    // Clean up the temporary <a> element
+    URL.revokeObjectURL(link.href);
+  }
+  
+  
+  
+  // Function to load tierlist data from a JSON file
+  function loadTierlist(event) {
+    var file = event.target.files[0];
+  
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var jsonData = e.target.result;
+      var tierlistData = JSON.parse(jsonData);
+  
+      // Clear existing tierlist
+      var tierlistDiv = document.querySelector('.tierlist');
+      tierlistDiv.innerHTML = '';
+  
+      // Reconstruct the tierlist from the loaded data
+      var title = tierlistData.title; // Get the title from the loaded data
+      document.querySelector('.title').value = title; // Set the title of the tier list
+  
+      var tiers = tierlistData.tiers; // Get the tiers data
+      for (var i = 0; i < tiers.length; i++) {
+        var row = tiers[i];
+        var rating = row.rating;
+        var images = row.images;
+  
+        var div = document.createElement('div');
+        div.className = 'row';
+        div.draggable = true;
+        // Add event listeners for row dragging
+  
+        var ratingDiv = document.createElement('div');
+        ratingDiv.className = 'ratingDiv';
+        ratingDiv.style.backgroundColor = colors[i];
+        var ratingInput = document.createElement('input');
+        ratingInput.className = 'rating';
+        ratingInput.value = rating;
+  
+        var itemsDiv = document.createElement('div');
+        itemsDiv.className = 'itemsRow itemsRow' + i.toString();
+        itemsDiv.addEventListener('dragover', allowDrop);
+        itemsDiv.addEventListener('drop', handleDrop);
+  
+        for (var j = 0; j < images.length; j++) {
+          var img = document.createElement('img');
+          img.src = images[j].src;
+          img.className = 'tierListImg';
+          img.addEventListener('contextmenu', handleImageContextMenu);
+          img.addEventListener('mouseover', handleImageMouseOver);
+          img.addEventListener('mouseout', handleImageMouseOut);
+          img.addEventListener('dragstart', handleDragStart);
+          img.className = 'tierListImg';
+          img.itemName = images[j].itemName; // Assign the itemName property to the image element
+          itemsDiv.appendChild(img);
+        }
+  
+        ratingDiv.appendChild(ratingInput);
+        div.appendChild(ratingDiv);
+        div.appendChild(itemsDiv);
+        tierlistDiv.appendChild(div);
+      }
+    };
+  
+    reader.readAsText(file);
+  } 
+
+  // Event listener for the "Save" button
+  var saveButton = document.querySelector('.saveBtn');
+  saveButton.addEventListener('click', saveTierlist);
+  
+  // Event listener for the file input to load tierlist data
+  var loadInput = document.querySelector('.loadInput');
+  loadInput.addEventListener('change', loadTierlist);
   
   
