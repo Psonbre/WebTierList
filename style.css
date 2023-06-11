@@ -88,3 +88,9 @@ body{
     padding-bottom: 5px;
     padding-top: 5px;
 }
+#versionNumber{
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    color: white;
+}
