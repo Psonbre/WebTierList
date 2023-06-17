@@ -106,8 +106,7 @@ window.addEventListener('DOMContentLoaded', function() {
   
       handleFiles(files);
     }
-    var canvas = document.createElement('canvas');
-    var ctx = canvas.getContext('2d');
+
     // Function to handle selected files
     function handleFiles(files) {
       var reader;
@@ -131,6 +130,8 @@ window.addEventListener('DOMContentLoaded', function() {
             
             img.onload = function() {
               img.onload = function(){}
+              var canvas = document.createElement('canvas');
+              var ctx = canvas.getContext('2d');
               var aspectRatio = img.width / img.height;
               var newHeight = 115;
               var newWidth = newHeight * aspectRatio;
@@ -371,9 +372,28 @@ window.addEventListener('DOMContentLoaded', function() {
         itemsDiv.addEventListener('dragover', allowDrop);
         itemsDiv.addEventListener('drop', handleDrop);
   
+        function handleImageLoad(image) {
+          return function() {
+            if (!image.resized) {
+              var canvas = document.createElement('canvas');
+              var ctx = canvas.getContext('2d');
+              var aspectRatio = image.width / image.height;
+              var newHeight = 115;
+              var newWidth = newHeight * aspectRatio;
+        
+              canvas.width = newWidth;
+              canvas.height = newHeight;
+              ctx.drawImage(image, 0, 0, newWidth, newHeight);
+              image.src = canvas.toDataURL(); // Resized image
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              image.resized = true; // Set the resized flag
+            }
+          };
+        }
+        
         for (var j = 0; j < images.length; j++) {
           var img = document.createElement('img');
-          img.src = images[j].src;
+        
           img.className = 'tierListImg';
           img.addEventListener('contextmenu', handleImageContextMenu);
           img.addEventListener('mouseover', handleImageMouseOver);
@@ -382,7 +402,13 @@ window.addEventListener('DOMContentLoaded', function() {
           img.className = 'tierListImg';
           img.itemName = images[j].itemName; // Assign the itemName property to the image element
           itemsDiv.appendChild(img);
+        
+          img.onload = handleImageLoad(img);
+          img.src = images[j].src;
         }
+        
+        
+        
   
         ratingDiv.appendChild(ratingInput);
         div.appendChild(ratingDiv);
