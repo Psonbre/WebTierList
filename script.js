@@ -106,7 +106,8 @@ window.addEventListener('DOMContentLoaded', function() {
   
       handleFiles(files);
     }
-  
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
     // Function to handle selected files
     function handleFiles(files) {
       var reader;
@@ -127,10 +128,9 @@ window.addEventListener('DOMContentLoaded', function() {
             img.addEventListener('mouseover', handleImageMouseOver);
             img.addEventListener('mouseout', handleImageMouseOut);
             img.addEventListener('dragstart', handleDragStart);
-            var canvas = document.createElement('canvas');
-            var ctx = canvas.getContext('2d');
             
             img.onload = function() {
+              img.onload = function(){}
               var aspectRatio = img.width / img.height;
               var newHeight = 115;
               var newWidth = newHeight * aspectRatio;
@@ -140,6 +140,7 @@ window.addEventListener('DOMContentLoaded', function() {
               ctx.drawImage(img, 0, 0, newWidth, newHeight);
     
               img.src = canvas.toDataURL(); // Resized image
+              ctx.clearRect(0, 0, canvas.width, canvas.height)
               
             };
             img.src = e.target.result;
