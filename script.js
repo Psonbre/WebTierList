@@ -1,7 +1,7 @@
 var colors = ['#ff5252', '#ff9f43', '#ffc107', '#4caf50', '#03a9f4', '#673ab7'];
 window.addEventListener('DOMContentLoaded', function() {
     var tierlistDiv = document.querySelector('.tierlist');
-    var alphabet = 'SABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var alphabet = 'SABCDEFGHIJKLMNOPQRTUVWXYZ';
     // Classic tier list colors
 
     for (var i = 0; i < 6; i++) {
@@ -113,17 +113,37 @@ window.addEventListener('DOMContentLoaded', function() {
   
       for (var i = 0; i < files.length; i++) {
         reader = new FileReader();
+
+
         reader.onload = (function(file) {
+          var img = document.createElement('img');
+          img.src = "loading.gif"
+          document.getElementsByClassName('itemsRow0')[0].appendChild(img);
+  
+          img.className = 'tierListImg';
           return function(e) {
-            var img = document.createElement('img');
+            img.itemName = file.name; 
             img.addEventListener('contextmenu', handleImageContextMenu);
             img.addEventListener('mouseover', handleImageMouseOver);
             img.addEventListener('mouseout', handleImageMouseOut);
-            img.src = e.target.result;
-            img.className = 'tierListImg';
-            img.itemName = file.name;
             img.addEventListener('dragstart', handleDragStart);
-            document.getElementsByClassName('itemsRow0')[0].appendChild(img);
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            
+            img.onload = function() {
+              var aspectRatio = img.width / img.height;
+              var newHeight = 115;
+              var newWidth = newHeight * aspectRatio;
+    
+              canvas.width = newWidth;
+              canvas.height = newHeight;
+              ctx.drawImage(img, 0, 0, newWidth, newHeight);
+    
+              img.src = canvas.toDataURL(); // Resized image
+              
+            };
+            img.src = e.target.result;
+            
           };
         })(files[i]);
   
@@ -173,6 +193,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
   function handleDrop(event) {
     event.preventDefault();
+    handleImageMouseOut();
     event.target.classList.remove('dragover'); // Remove the CSS class for visual feedback
   
     if (event.target === draggedElement) {
@@ -312,6 +333,7 @@ window.addEventListener('DOMContentLoaded', function() {
   function loadTierlist(event) {
     var file = event.target.files[0];
   
+    
     var reader = new FileReader();
     reader.onload = function (e) {
       var jsonData = e.target.result;
