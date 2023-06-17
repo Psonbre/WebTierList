@@ -62,7 +62,9 @@ body{
 .tierListImg{
     padding: 5px;
     height: 115px;
+    cursor:grab;
 }
+
 .itemsRow{
     width: 100%;
     border-left: 1px solid black;
