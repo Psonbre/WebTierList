@@ -1,12 +1,24 @@
 var colors = ['#ff5252', '#ff9f43', '#ffc107', '#4caf50', '#03a9f4', '#673ab7'];
+let tierlistDiv = null
 window.addEventListener('DOMContentLoaded', function() {
-    var tierlistDiv = document.querySelector('.tierlist');
-    var alphabet = 'SABCDEFGHIJKLMNOPQRTUVWXYZ';
+    tierlistDiv = document.querySelector('.tierlist');
+
     // Classic tier list colors
 
     for (var i = 0; i < 6; i++) {
+      createRow()
+    }
+    function createRow(){
+      var alphabet = 'SABCDEFGHIJKLMNOPQRTUVWXYZ';
       var letter = alphabet[i];
       var div = document.createElement('div');
+      div.addEventListener('dragover', allowRowDrop);
+      div.addEventListener('drop', handleRowDrop);
+      div.addEventListener('dragstart', handleRowDragStart);
+      div.addEventListener('dragover', handleRowDragOver);
+      div.addEventListener('dragenter', handleRowDragEnter);
+      div.addEventListener('dragleave', handleRowDragLeave);
+      div.draggable = true;
       div.className = 'row';
       var ratingDiv = document.createElement('div');
       ratingDiv.className = 'ratingDiv';
@@ -28,36 +40,8 @@ window.addEventListener('DOMContentLoaded', function() {
       div.appendChild(itemsDiv);
       tierlistDiv.appendChild(div);
     }
-
     var addRowButton = document.querySelector('.addRowBtn');
-    addRowButton.addEventListener('click', function() {
-      var tierlistDiv = document.querySelector('.tierlist');
-      var alphabet = 'SABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      var numRows = tierlistDiv.getElementsByClassName('row').length;
-  
-      if (numRows >= alphabet.length) {
-        return; // Maximum number of rows reached
-      }
-  
-      var letter = alphabet[numRows];
-      var div = document.createElement('div');
-      div.className = 'row';
-      var ratingDiv = document.createElement('div');
-      ratingDiv.style.backgroundColor = colors[numRows % colors.length];
-      ratingDiv.className = 'ratingDiv';
-      var rating = document.createElement('input');
-      rating.className = 'rating';
-      rating.maxLength = 1;
-      rating.value = letter;
-      var itemsDiv = document.createElement('div');
-      itemsDiv.className = 'itemsRow itemsRow' + numRows.toString();
-      itemsDiv.addEventListener('dragover', allowDrop);
-      itemsDiv.addEventListener('drop', handleDrop);
-      ratingDiv.appendChild(rating);
-      div.appendChild(ratingDiv);
-      div.appendChild(itemsDiv);
-      tierlistDiv.appendChild(div);
-    });
+    addRowButton.addEventListener('click', createRow);
 
     var removeRowButton = document.querySelector('.removeRowBtn');
     removeRowButton.addEventListener('click', function() {
@@ -156,7 +140,49 @@ window.addEventListener('DOMContentLoaded', function() {
     // Add event listener for paste event
     window.addEventListener('paste', handlePaste);
   });
+
+  var draggedRowElement = null;
   
+  function handleRowDragStart(event) {
+    draggedRowElement = event.target;
+    event.dataTransfer.effectAllowed = 'move'; // Set allowed effect
+    event.target.classList.add('dragging'); // Add a CSS class for visual feedback
+  }
+  
+  function handleRowDragOver(event) {
+    event.preventDefault();
+  }
+  
+  function handleRowDragEnter(event) {
+    event.target.classList.add('dragover'); // Add a CSS class for visual feedback 
+  }
+  
+  function handleRowDragLeave(event) {
+    event.target.classList.remove('dragover'); // Remove the CSS class for visual feedback
+  }
+  
+  function allowRowDrop(event) {
+    event.preventDefault();
+  }
+
+  function handleRowDrop(event) {
+    if (draggedRowElement == null) return;
+    event.preventDefault();
+    handleImageMouseOut();
+    event.target.classList.remove('dragover'); // Remove the CSS class for visual feedback
+    draggedRowElement.classList.remove('dragging')
+    if (event.target === draggedRowElement || !draggedRowElement.classList.contains('row')) { return;}
+    
+    var target = event.target.closest('.row'); // Find the nearest itemsRow container
+
+    if (event.y > target.getBoundingClientRect().y + target.getBoundingClientRect().height/2){
+      tierlistDiv.insertBefore(draggedRowElement, target.nextSibling);
+    }
+    else{
+      tierlistDiv.insertBefore(draggedRowElement, target);
+    }
+    
+  }
   
   var draggedElement = null;
   
@@ -165,7 +191,7 @@ window.addEventListener('DOMContentLoaded', function() {
     event.dataTransfer.setData('text/plain', ''); // Set data to empty string
     event.dataTransfer.setDragImage(event.target, 0, 0); // Set drag image
     event.dataTransfer.effectAllowed = 'move'; // Set allowed effect
-    event.target.classList.add('dragging'); // Add a CSS class for visual feedback
+    event.target.classList.add('dragging'); // Add a CSS class for visual feedback      
   }
   
   function handleDragOver(event) {
@@ -194,11 +220,11 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   function handleDrop(event) {
+    if (draggedElement == null) return;
     event.preventDefault();
     handleImageMouseOut();
     event.target.classList.remove('dragover'); // Remove the CSS class for visual feedback
-  
-    if (event.target === draggedElement) {
+    if (event.target === draggedElement || event.target.parentNode === draggedElement.parentNode.parentNode || event.target.classList.contains("tooltip") || !draggedElement.classList.contains('tierListImg')) {
       return; // Ignore if dropped on itself
     }
   
@@ -215,6 +241,8 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   }
   
+
+
   function handleImageMouseOver(event) {
     var image = event.target;
     var imageName = image.itemName.split('.').slice(0, -1).join('.');
@@ -357,6 +385,12 @@ window.addEventListener('DOMContentLoaded', function() {
   
         var div = document.createElement('div');
         div.className = 'row';
+        div.addEventListener('dragover', allowRowDrop);
+        div.addEventListener('drop', handleRowDrop);
+        div.addEventListener('dragstart', handleRowDragStart);
+        div.addEventListener('dragover', handleRowDragOver);
+        div.addEventListener('dragenter', handleRowDragEnter);
+        div.addEventListener('dragleave', handleRowDragLeave);
         div.draggable = true;
         // Add event listeners for row dragging
   
@@ -406,10 +440,6 @@ window.addEventListener('DOMContentLoaded', function() {
           img.onload = handleImageLoad(img);
           img.src = images[j].src;
         }
-        
-        
-        
-  
         ratingDiv.appendChild(ratingInput);
         div.appendChild(ratingDiv);
         div.appendChild(itemsDiv);
