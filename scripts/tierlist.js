@@ -169,91 +169,90 @@ export function saveTierlist() {
 }
 
 export function loadTierlist(event) {
-    var file = event.target.files[0];
-  
-    
+    var file = event.target.files[0];   
     var reader = new FileReader();
     reader.onload = function (e) {
       var jsonData = e.target.result;
       var tierlistData = JSON.parse(jsonData);
-  
-      // Clear existing tierlist
-      var tierlistDiv = document.querySelector('.tierlist');
-      tierlistDiv.innerHTML = '';
-  
-      // Reconstruct the tierlist from the loaded data
-      var title = tierlistData.title; // Get the title from the loaded data
-      document.querySelector('.title').value = title; // Set the title of the tier list
-  
-      var tiers = tierlistData.tiers; // Get the tiers data
-      for (var i = 0; i < tiers.length; i++) {
-        var row = tiers[i];
-        var rating = row.rating;
-        var images = row.images;
-  
-        var div = document.createElement('div');
-        div.className = 'row';
-        div.addEventListener('dragover', allowRowDrop);
-        div.addEventListener('drop', handleRowDrop);
-        div.addEventListener('dragstart', handleRowDragStart);
-        div.addEventListener('dragover', handleRowDragOver);
-        div.addEventListener('dragenter', handleRowDragEnter);
-        div.addEventListener('dragleave', handleRowDragLeave);
-        div.draggable = true;
-        // Add event listeners for row dragging
-  
-        var ratingDiv = document.createElement('div');
-        ratingDiv.className = 'ratingDiv';
-        ratingDiv.style.backgroundColor = colors[i];
-        var ratingInput = document.createElement('input');
-        ratingInput.className = 'rating';
-        ratingInput.value = rating;
-  
-        var itemsDiv = document.createElement('div');
-        itemsDiv.className = 'itemsRow itemsRow' + i.toString();
-        itemsDiv.addEventListener('dragover', allowDrop);
-        itemsDiv.addEventListener('drop', handleDrop);
-  
-        function handleImageLoad(image) {
-          return function() {
-            if (!image.resized) {
-              var canvas = document.createElement('canvas');
-              var ctx = canvas.getContext('2d');
-              var aspectRatio = image.width / image.height;
-              var newHeight = 115;
-              var newWidth = newHeight * aspectRatio;
-        
-              canvas.width = newWidth;
-              canvas.height = newHeight;
-              ctx.drawImage(image, 0, 0, newWidth, newHeight);
-              image.src = canvas.toDataURL(); // Resized image
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-              image.resized = true; // Set the resized flag
-            }
-          };
-        }
-        
-        for (var j = 0; j < images.length; j++) {
-          var img = document.createElement('img');
-        
-          img.className = 'tierListImg';
-          img.addEventListener('contextmenu', handleImageContextMenu);
-          img.addEventListener('mouseover', handleImageMouseOver);
-          img.addEventListener('mouseout', handleImageMouseOut);
-          img.addEventListener('dragstart', handleDragStart);
-          img.className = 'tierListImg';
-          img.itemName = images[j].itemName; // Assign the itemName property to the image element
-          itemsDiv.appendChild(img);
-        
-          img.onload = handleImageLoad(img);
-          img.src = images[j].src;
-        }
-        ratingDiv.appendChild(ratingInput);
-        div.appendChild(ratingDiv);
-        div.appendChild(itemsDiv);
-        tierlistDiv.appendChild(div);
-      }
+      loadFromJson(tierlistData);
     };
-  
     reader.readAsText(file);
 } 
+
+export function loadFromJson(tierlistData){
+    var tierlistDiv = document.querySelector('.tierlist');
+    tierlistDiv.innerHTML = '';
+
+    // Reconstruct the tierlist from the loaded data
+    var title = tierlistData.title; // Get the title from the loaded data
+    document.querySelector('.title').value = title; // Set the title of the tier list
+
+    var tiers = tierlistData.tiers; // Get the tiers data
+    for (var i = 0; i < tiers.length; i++) {
+      var row = tiers[i];
+      var rating = row.rating;
+      var images = row.images;
+
+      var div = document.createElement('div');
+      div.className = 'row';
+      div.addEventListener('dragover', allowRowDrop);
+      div.addEventListener('drop', handleRowDrop);
+      div.addEventListener('dragstart', handleRowDragStart);
+      div.addEventListener('dragover', handleRowDragOver);
+      div.addEventListener('dragenter', handleRowDragEnter);
+      div.addEventListener('dragleave', handleRowDragLeave);
+      div.draggable = true;
+      // Add event listeners for row dragging
+
+      var ratingDiv = document.createElement('div');
+      ratingDiv.className = 'ratingDiv';
+      ratingDiv.style.backgroundColor = colors[i];
+      var ratingInput = document.createElement('input');
+      ratingInput.className = 'rating';
+      ratingInput.value = rating;
+
+      var itemsDiv = document.createElement('div');
+      itemsDiv.className = 'itemsRow itemsRow' + i.toString();
+      itemsDiv.addEventListener('dragover', allowDrop);
+      itemsDiv.addEventListener('drop', handleDrop);
+
+      function handleImageLoad(image) {
+        return function() {
+          if (!image.resized) {
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            var aspectRatio = image.width / image.height;
+            var newHeight = 115;
+            var newWidth = newHeight * aspectRatio;
+      
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+            ctx.drawImage(image, 0, 0, newWidth, newHeight);
+            image.src = canvas.toDataURL(); // Resized image
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            image.resized = true; // Set the resized flag
+          }
+        };
+      }
+      
+      for (var j = 0; j < images.length; j++) {
+        var img = document.createElement('img');
+      
+        img.className = 'tierListImg';
+        img.addEventListener('contextmenu', handleImageContextMenu);
+        img.addEventListener('mouseover', handleImageMouseOver);
+        img.addEventListener('mouseout', handleImageMouseOut);
+        img.addEventListener('dragstart', handleDragStart);
+        img.className = 'tierListImg';
+        img.itemName = images[j].itemName; // Assign the itemName property to the image element
+        itemsDiv.appendChild(img);
+      
+        img.onload = handleImageLoad(img);
+        img.src = images[j].src;
+      }
+      ratingDiv.appendChild(ratingInput);
+      div.appendChild(ratingDiv);
+      div.appendChild(itemsDiv);
+      tierlistDiv.appendChild(div);
+    }
+}

@@ -7,12 +7,13 @@
     <title>Tier List Maker</title>
     <link rel="stylesheet" href="styles/style.css">
     <link rel="shortcut icon" href="assets/images/TierListIcon.png" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js" defer></script>
-    <script async defer src="https://apis.google.com/js/api.js" onload="handleClientLoad"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10" defer></script>
     <script src="scripts/main.js" type="module" defer></script>
     <script src="scripts/tierlist.js" type="module" defer></script>
     <script src="scripts/dragDrop.js" type="module" defer></script>
-    <script src="scripts/googleSheetsAPI.js" type="module" defer></script>
+    <script src="scripts/githubAPI.js" type="module" defer></script>
 </head>
 <body>
     <p id="versionNumber">v2.0</p>
@@ -26,7 +27,9 @@
             <input type="button" value="Add row" class="addRowBtn">
             <input type="button" value="Remove row" class="removeRowBtn">
             <input type="button" value="Save (JSON)" class="saveBtn">
-            <input type="file" class="loadInput";>
+            <input type="button" value="Upload and Share" class="uploadTierlistBtn">
+            <input type="file" class="loadInput">
+            
         </div>        
         <img src="assets/images/trashIcon.png" alt="trash" class="trash">
     </div>
