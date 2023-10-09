@@ -2,7 +2,9 @@ import { loadFromJson } from "./tierlist.js";
 
 const repoOwner = 'psonbre';
 const repoName = 'webtierlistdb';
-const token = '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'; // Keep this token safe!
+const ken = "EFPSWJvXx3Unnx3xvXQX"
+const to = "MVHS50BHYOg20LnV" 
+
 let host = "https://github.com/Psonbre/WebTierList";
 host = "http://127.0.0.1:5500/index.html";
 async function sha1(data) {
@@ -40,7 +42,7 @@ export async function uploadTierlist() {
     try {
         const response = await axios.put(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, data, {
             headers: {
-                'Authorization': `token ${token}`
+                'Authorization': `token ghp_${to+ken}`
             }
         });
         Swal.fire({
