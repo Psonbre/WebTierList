@@ -115,13 +115,22 @@ function getUrlParameter(name) {
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
-// Function to load a tierlist from the given ID
 async function loadTierlistFromId(id) {
     try {
         const response = await axios.get(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${id}.json`);
-        const content = response.data.content;
-        const tierlistData = JSON.parse(atob(content)); // Decode and parse the content
-        return tierlistData;
+        
+        if (response.data.size > 1000000) {  // Check if size is over 1MB
+            // If file is too large, fetch content from the blob URL
+            const blobResponse = await axios.get(response.data.git_url);
+            // Fetch the content from the blob's URL
+            const blobContent = blobResponse.data.content;
+            const tierlistData = JSON.parse(atob(blobContent)); // Decode and parse the content
+            return tierlistData;
+        } else {
+            const content = response.data.content;
+            const tierlistData = JSON.parse(atob(content)); // Decode and parse the content for smaller files
+            return tierlistData;
+        }
     } catch (error) {
         console.error('Error loading tierlist:', error);
         return null;
