@@ -5,7 +5,7 @@ const repoName = 'webtierlistdb';
 const k = "ENRZVc3aGZyOTlGTjFHRFJlQQ=="
 const t = "Z2hwX0t4VWMzeGZJb0JUU3B0VXpye" 
 
-let host = "https://github.com/Psonbre/WebTierList";
+let host = "https://psonbre.github.io/WebTierList/";
 async function sha1(data) {
     let buffer = new TextEncoder("utf-8").encode(data);
     return crypto.subtle.digest("SHA-1", buffer).then(function(hash) {
