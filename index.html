@@ -5,13 +5,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tier List Maker</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="shortcut icon" href="TierListIcon.png" type="image/x-icon">
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="shortcut icon" href="assets/images/TierListIcon.png" type="image/x-icon">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js" defer></script>
-    <script src="script.js" defer></script>
+    <script async defer src="https://apis.google.com/js/api.js" onload="handleClientLoad"></script>
+    <script src="scripts/main.js" type="module" defer></script>
+    <script src="scripts/tierlist.js" type="module" defer></script>
+    <script src="scripts/dragDrop.js" type="module" defer></script>
+    <script src="scripts/googleSheetsAPI.js" type="module" defer></script>
 </head>
 <body>
-    <p id="versionNumber">v1.41</p>
+    <p id="versionNumber">v2.0</p>
     <div class="title-div"><input type="text" name="title" id="title" class="title" value="Tier List"></div>
     <div class="main">
         <div class="tierlist"></div>
@@ -24,7 +28,7 @@
             <input type="button" value="Save (JSON)" class="saveBtn">
             <input type="file" class="loadInput";>
         </div>        
-        <img src="trashIcon.png" alt="trash" class="trash">
+        <img src="assets/images/trashIcon.png" alt="trash" class="trash">
     </div>
 
 </body>
