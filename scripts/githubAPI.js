@@ -6,7 +6,6 @@ const ken = "EFPSWJvXx3Unnx3xvXQX"
 const to = "MVHS50BHYOg20LnV" 
 
 let host = "https://github.com/Psonbre/WebTierList";
-host = "http://127.0.0.1:5500/index.html";
 async function sha1(data) {
     let buffer = new TextEncoder("utf-8").encode(data);
     return crypto.subtle.digest("SHA-1", buffer).then(function(hash) {
