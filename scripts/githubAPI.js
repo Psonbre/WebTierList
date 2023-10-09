@@ -2,8 +2,8 @@ import { loadFromJson } from "./tierlist.js";
 
 const repoOwner = 'psonbre';
 const repoName = 'webtierlistdb';
-const k = "RlBTV0p2WHgzVW5ueDN4dlhRWA=="
-const t = "Z2hwX01WSFM1MEJIWU9nMjBMblZF" 
+const k = "ENRZVc3aGZyOTlGTjFHRFJlQQ=="
+const t = "Z2hwX0t4VWMzeGZJb0JUU3B0VXpye" 
 
 let host = "https://github.com/Psonbre/WebTierList";
 async function sha1(data) {
