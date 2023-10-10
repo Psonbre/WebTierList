@@ -81,53 +81,19 @@ function createRow(){
 }
 
 function handleFiles(files) {
-    var reader;
-
-    for (var i = 0; i < files.length; i++) {
-      reader = new FileReader();
-
+  for (var i = 0; i < files.length; i++) {
+      var reader = new FileReader();
 
       reader.onload = (function(file) {
-        var img = document.createElement('img');
-        img.src = "../assets/images/loading.gif"
-        document.getElementsByClassName('itemsRow0')[0].appendChild(img);
-
-        img.className = 'tierListImg';
-        return function(e) {
-          img.itemName = file.name; 
-          img.addEventListener('contextmenu', function(event){
-            handleImageContextMenu(event,img)
-          });
-          img.addEventListener('mouseover', handleImageMouseOver);
-          img.addEventListener('mouseout', function(event) {
-            handleImageMouseOut(event, img);
-          });
-          img.addEventListener('dragstart', handleDragStart);
-          
-          img.onload = function() {
-            img.onload = function(){}
-            var canvas = document.createElement('canvas');
-            var ctx = canvas.getContext('2d');
-            var aspectRatio = img.width / img.height;
-            var newHeight = 115;
-            var newWidth = newHeight * aspectRatio;
-  
-            canvas.width = newWidth;
-            canvas.height = newHeight;
-            ctx.drawImage(img, 0, 0, newWidth, newHeight);
-  
-            img.src = canvas.toDataURL(); // Resized image
-            ctx.clearRect(0, 0, canvas.width, canvas.height)
-            
+          return function(e) {
+              addImageToTierList(e.target.result, file.name, 0); // Add images to the first row (row 0)
           };
-          img.src = e.target.result;
-          
-        };
       })(files[i]);
 
       reader.readAsDataURL(files[i]);
-    }
+  }
 }
+
 
 function handleTrashClick() {
     var images = document.querySelectorAll('.tierListImg');
@@ -184,92 +150,49 @@ export function loadTierlist(event) {
     reader.readAsText(file);
 } 
 
-export function loadFromJson(tierlistData){
-    var tierlistDiv = document.querySelector('.tierlist');
-    tierlistDiv.innerHTML = '';
+export function loadFromJson(tierlistData) {
+  rowCount = 0;
+  var tierlistDiv = document.querySelector('.tierlist');
+  if (!tierlistDiv) {
+      console.error("Tierlist div not found in the DOM");
+      return;
+  }
 
-    // Reconstruct the tierlist from the loaded data
-    var title = tierlistData.title; // Get the title from the loaded data
-    document.querySelector('.title').value = title; // Set the title of the tier list
+  tierlistDiv.innerHTML = '';
 
-    var tiers = tierlistData.tiers; // Get the tiers data
-    for (var i = 0; i < tiers.length; i++) {
+  // Reconstruct the tierlist from the loaded data
+  var title = tierlistData.title; // Get the title from the loaded data
+  document.querySelector('.title').value = title; // Set the title of the tier list
+
+  var tiers = tierlistData.tiers; // Get the tiers data
+  for (var i = 0; i < tiers.length; i++) {
       var row = tiers[i];
       var rating = row.rating;
+
+      // Create a new row and rating input
+      createRow();
+      var newRow = document.querySelector('.row:last-child');
+      newRow.querySelector('.rating').value = rating;
+
       var images = row.images;
 
-      var div = document.createElement('div');
-      div.className = 'row';
-      div.addEventListener('dragover', allowRowDrop);
-      div.addEventListener('drop', handleRowDrop);
-      div.addEventListener('dragstart', handleRowDragStart);
-      div.addEventListener('dragover', handleRowDragOver);
-      div.addEventListener('dragenter', handleRowDragEnter);
-      div.addEventListener('dragleave', handleRowDragLeave);
-      div.draggable = true;
-      // Add event listeners for row dragging
-
-      var ratingDiv = document.createElement('div');
-      ratingDiv.className = 'ratingDiv';
-      ratingDiv.style.backgroundColor = colors[i];
-      var ratingInput = document.createElement('input');
-      ratingInput.className = 'rating';
-      ratingInput.value = rating;
-
-      var itemsDiv = document.createElement('div');
-      itemsDiv.className = 'itemsRow itemsRow' + i.toString();
-      itemsDiv.addEventListener('dragover', allowDrop);
-      itemsDiv.addEventListener('drop', handleDrop);
-
-      function handleImageLoad(image) {
-        return function() {
-          if (!image.resized) {
-            var canvas = document.createElement('canvas');
-            var ctx = canvas.getContext('2d');
-            var aspectRatio = image.width / image.height;
-            var newHeight = 115;
-            var newWidth = newHeight * aspectRatio;
-      
-            canvas.width = newWidth;
-            canvas.height = newHeight;
-            ctx.drawImage(image, 0, 0, newWidth, newHeight);
-            image.src = canvas.toDataURL(); // Resized image
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            image.resized = true; // Set the resized flag
-          }
-        };
-      }
-      
       for (var j = 0; j < images.length; j++) {
-        var img = document.createElement('img');
-      
-        img.className = 'tierListImg';
-        img.addEventListener('contextmenu', function(event){
-          handleImageContextMenu(event,img)
-        });
-        img.addEventListener('mouseover', handleImageMouseOver);
-        img.addEventListener('mouseout', function(event) {
-          handleImageMouseOut(event, img);
-        });
-        img.addEventListener('dragstart', handleDragStart);
-        img.className = 'tierListImg';
-        img.itemName = images[j].itemName; // Assign the itemName property to the image element
-        itemsDiv.appendChild(img);
-      
-        img.onload = handleImageLoad(img);
-        img.src = images[j].src;
+          var imgSrc = images[j].src;
+          var itemName = images[j].itemName;
+
+          // Add each image to the current row
+          addImageToTierList(imgSrc, itemName, i);
       }
-      ratingDiv.appendChild(ratingInput);
-      div.appendChild(ratingDiv);
-      div.appendChild(itemsDiv);
-      tierlistDiv.appendChild(div);
-    }
+  }
 }
+
+
+
 
 function handleImagePaste(e) {
   var clipboardData = e.clipboardData;
   var items = clipboardData.items;
-  
+
   if (!items) return; // Exit if no items are found
 
   for (var i = 0; i < items.length; i++) {
@@ -280,47 +203,49 @@ function handleImagePaste(e) {
 
       // Once the reader has loaded the image data, handle it
       reader.onload = function(event) {
-          var imgSrc = event.target.result; // Base64 encoded image data
-          addImageToTierList(imgSrc); // A function to handle adding the image to the tierlist
+          addImageToTierList(event.target.result, "Pasted Image", 0); // Add pasted images to the first row (row 0)
       };
 
       reader.readAsDataURL(blob);
   }
 }
-function addImageToTierList(imgSrc) {
+
+
+export function addImageToTierList(imgSrc, name, row) {
   var img = document.createElement('img');
   img.src = imgSrc;
   img.className = 'tierListImg';
-  img.itemName = "Pasted Image";  // Tooltip text
+  img.itemName = name;
 
   img.addEventListener('contextmenu', function(event){
-    handleImageContextMenu(event,img)
+    handleImageContextMenu(event, img);
   });
   img.addEventListener('mouseover', handleImageMouseOver);
   img.addEventListener('mouseout', function(event) {
     handleImageMouseOut(event, img);
   });
-  img.addEventListener('dragstart', handleDragStart);  // Assuming this function doesn't need the image reference
+  img.addEventListener('dragstart', handleDragStart);
 
   img.onload = function() {
-      img.onload = function(){} // Clear the onload handler to prevent future triggers
+    img.onload = function(){} // Clear the onload handler to prevent future triggers
       
-      // Resize logic
-      var canvas = document.createElement('canvas');
-      var ctx = canvas.getContext('2d');
-      var aspectRatio = img.width / img.height;
-      var newHeight = 115;
-      var newWidth = newHeight * aspectRatio;
+    // Resize logic
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    var aspectRatio = img.width / img.height;
+    var newHeight = 115;
+    var newWidth = newHeight * aspectRatio;
 
-      canvas.width = newWidth;
-      canvas.height = newHeight;
-      ctx.drawImage(img, 0, 0, newWidth, newHeight);
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
-      img.src = canvas.toDataURL(); // Resized image
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    img.src = canvas.toDataURL(); // Resized image
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Append the image to the desired tier row (e.g., the first row)
-      document.getElementsByClassName('itemsRow0')[0].appendChild(img);
+    // Append the image to the desired tier row (e.g., the specified row)
+    console.log(document.querySelector('.itemsRow'))
+    document.querySelector('.itemsRow' + row).appendChild(img);
   };
 }
 
