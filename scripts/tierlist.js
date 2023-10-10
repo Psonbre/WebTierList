@@ -6,6 +6,7 @@ let tierlistDiv = null;
 let rowCount = 0;
 
 export function initTierList() {
+    document.addEventListener('paste', handleImagePaste);
     tierlistDiv = document.querySelector('.tierlist');
 
     // Create the initial rows
@@ -94,9 +95,13 @@ function handleFiles(files) {
         img.className = 'tierListImg';
         return function(e) {
           img.itemName = file.name; 
-          img.addEventListener('contextmenu', handleImageContextMenu);
+          img.addEventListener('contextmenu', function(event){
+            handleImageContextMenu(event,img)
+          });
           img.addEventListener('mouseover', handleImageMouseOver);
-          img.addEventListener('mouseout', handleImageMouseOut);
+          img.addEventListener('mouseout', function(event) {
+            handleImageMouseOut(event, img);
+          });
           img.addEventListener('dragstart', handleDragStart);
           
           img.onload = function() {
@@ -239,9 +244,13 @@ export function loadFromJson(tierlistData){
         var img = document.createElement('img');
       
         img.className = 'tierListImg';
-        img.addEventListener('contextmenu', handleImageContextMenu);
+        img.addEventListener('contextmenu', function(event){
+          handleImageContextMenu(event,img)
+        });
         img.addEventListener('mouseover', handleImageMouseOver);
-        img.addEventListener('mouseout', handleImageMouseOut);
+        img.addEventListener('mouseout', function(event) {
+          handleImageMouseOut(event, img);
+        });
         img.addEventListener('dragstart', handleDragStart);
         img.className = 'tierListImg';
         img.itemName = images[j].itemName; // Assign the itemName property to the image element
@@ -256,3 +265,64 @@ export function loadFromJson(tierlistData){
       tierlistDiv.appendChild(div);
     }
 }
+
+function handleImagePaste(e) {
+  var clipboardData = e.clipboardData;
+  var items = clipboardData.items;
+  
+  if (!items) return; // Exit if no items are found
+
+  for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') === -1) continue; // Skip if not an image
+
+      var blob = items[i].getAsFile(); // Get the image as a blob
+      var reader = new FileReader();
+
+      // Once the reader has loaded the image data, handle it
+      reader.onload = function(event) {
+          var imgSrc = event.target.result; // Base64 encoded image data
+          addImageToTierList(imgSrc); // A function to handle adding the image to the tierlist
+      };
+
+      reader.readAsDataURL(blob);
+  }
+}
+function addImageToTierList(imgSrc) {
+  var img = document.createElement('img');
+  img.src = imgSrc;
+  img.className = 'tierListImg';
+  img.itemName = "Pasted Image";  // Tooltip text
+
+  img.addEventListener('contextmenu', function(event){
+    handleImageContextMenu(event,img)
+  });
+  img.addEventListener('mouseover', handleImageMouseOver);
+  img.addEventListener('mouseout', function(event) {
+    handleImageMouseOut(event, img);
+  });
+  img.addEventListener('dragstart', handleDragStart);  // Assuming this function doesn't need the image reference
+
+  img.onload = function() {
+      img.onload = function(){} // Clear the onload handler to prevent future triggers
+      
+      // Resize logic
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+      var aspectRatio = img.width / img.height;
+      var newHeight = 115;
+      var newWidth = newHeight * aspectRatio;
+
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+      img.src = canvas.toDataURL(); // Resized image
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Append the image to the desired tier row (e.g., the first row)
+      document.getElementsByClassName('itemsRow0')[0].appendChild(img);
+  };
+}
+
+
+

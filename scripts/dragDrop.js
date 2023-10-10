@@ -96,17 +96,26 @@ export function handleDrop(event) {
     }
 }
 
-export function handleImageContextMenu(event) {
+export function handleImageContextMenu(event, image) {
     event.preventDefault(); // Prevent the default context menu
-    var image = event.target;
-    var tooltip = document.querySelector('.tooltip')
-    tooltip.parentNode.removeChild(tooltip);
-    image.parentNode.removeChild(image); // Remove the image element from its parent
+
+    var tooltip = document.querySelector('.tooltip');
+    
+    if (tooltip && tooltip.parentNode) {
+        tooltip.parentNode.removeChild(tooltip);
+    }
+
+    if (image && image.parentNode) {
+        image.parentNode.removeChild(image); // Remove the image element from its parent
+    }
 }
 
 export function handleImageMouseOver(event) {
     var image = event.target;
-    var imageName = image.itemName.split('.').slice(0, -1).join('.');
+
+    // Check if the image has the itemName property defined
+    var imageName = image.itemName;
+
     var tooltip = document.createElement('div');
     tooltip.className = 'tooltip';
     tooltip.textContent = imageName;
@@ -120,19 +129,22 @@ export function handleImageMouseOver(event) {
         tooltip.style.visibility = 'visible'; // Show the tooltip
     }, 0);
 
-    image.addEventListener('dblclick', makeTooltipModifiable.bind(tooltip));
+    image.addEventListener('dblclick', function() {
+        makeTooltipModifiable(tooltip);
+    });
+    
 }
 
-function makeTooltipModifiable() {
-    this.contentEditable = true;
-    this.focus();
+function makeTooltipModifiable(tooltip) {
+    tooltip.contentEditable = true;
+    tooltip.focus();
     const range = document.createRange();
-    range.selectNodeContents(this);
+    range.selectNodeContents(tooltip);
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(range);
-    this.addEventListener('keydown', handleTooltipKeydown.bind(this));
-    this.addEventListener('blur', saveTooltip.bind(this));
+    tooltip.addEventListener('keydown', handleTooltipKeydown.bind(tooltip));
+    tooltip.addEventListener('blur', saveTooltip.bind(tooltip));
 }
 
 function handleTooltipKeydown(event) {
@@ -145,7 +157,6 @@ function handleTooltipKeydown(event) {
 function saveTooltip() {
     var tooltip = this;
     var image = tooltip.previousSibling;
-    image.itemName = tooltip.textContent.trim() + '.png';
     tooltip.contentEditable = false;
     tooltip.removeEventListener('keydown', handleTooltipKeydown);
     tooltip.removeEventListener('blur', saveTooltip);
@@ -153,9 +164,12 @@ function saveTooltip() {
     tooltip.style.left = image.offsetLeft + (image.offsetWidth - tooltip.offsetWidth) / 2 + 'px'; // Center the tooltip horizontally
 }
 
-export function handleImageMouseOut(event) {
+export function handleImageMouseOut(event, image) {
+    if (!image || image.tagName !== 'IMG') return;
+
     var tooltip = document.querySelector('.tooltip');
     if (tooltip) {
+        image.itemName = tooltip.textContent;
         tooltip.parentNode.removeChild(tooltip);
     }
 }
